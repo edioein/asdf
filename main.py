@@ -21,7 +21,7 @@ if st.session_state['running']:
         if st.session_state['잔여시간'] <= 0:
             st.session_state['running'] = False
             st.session_state['잔여시간'] = 0
-        st.experimental_rerun()
+        st.rerun()
 
 # 타이머 시작 함수
 def start_timer():
