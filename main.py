@@ -1,68 +1,68 @@
 import streamlit as st
 import time
 
-# 초기 변수 설정
+# 세션 상태 초기화
 if '잔여시간' not in st.session_state:
     st.session_state['잔여시간'] = 0
 if 'cnt' not in st.session_state:
     st.session_state['cnt'] = 0
 if 'running' not in st.session_state:
     st.session_state['running'] = False
+if 'last_update' not in st.session_state:
+    st.session_state['last_update'] = time.time()
+
+# 타이머 로직: 매 초 자동으로 감소
+if st.session_state['running']:
+    now = time.time()
+    elapsed = now - st.session_state['last_update']
+    if elapsed >= 1:
+        st.session_state['잔여시간'] -= int(elapsed)
+        st.session_state['last_update'] = now
+        if st.session_state['잔여시간'] <= 0:
+            st.session_state['running'] = False
+            st.session_state['잔여시간'] = 0
+        st.experimental_rerun()
 
 # 타이머 시작 함수
 def start_timer():
-    st.session_state['잔여시간'] = 5  # 5초로 설정
+    st.session_state['잔여시간'] = 5  # 예: 5초
     st.session_state['cnt'] = 0
     st.session_state['running'] = True
-    update_timer()
-
-# 타이머 업데이트 함수
-def update_timer():
-    if st.session_state['잔여시간'] > 0:
-        st.session_state['잔여시간'] -= 1
-        st.text(f"Time left: {st.session_state['잔여시간']} seconds")
-        time.sleep(1)  # 1초 대기 후 타이머 갱신
-        update_timer()  # 재귀적으로 타이머 업데이트
-    else:
-        st.session_state['running'] = False
-        st.text(f"최종횟수: {st.session_state['cnt']}")
-        st.text("TIME OVER")
+    st.session_state['last_update'] = time.time()
 
 # 클릭 함수
 def click():
     if st.session_state['running']:
         st.session_state['cnt'] += 1
-        st.text(f"현재 횟수: {st.session_state['cnt']}")
 
 # 리셋 함수
 def reset():
     st.session_state['cnt'] = 0
     st.session_state['잔여시간'] = 0
     st.session_state['running'] = False
-    st.text(f"현재 횟수: {st.session_state['cnt']}")
 
-# Streamlit 인터페이스 설정
-st.title('주어진 시간동안 최대한 많이 클릭하세요!')
+# ---------------------
+# UI 영역
+st.title('주어진 시간 동안 최대한 많이 클릭하세요!')
 
-# 현재 클릭 횟수와 남은 시간 표시
-st.text(f"현재 횟수: {st.session_state['cnt']}")
+st.write(f"⏳ 남은 시간: {st.session_state['잔여시간']}초")
+st.write(f"👆 클릭 횟수: {st.session_state['cnt']}")
 
-# 타이머 시작 버튼
-if st.button('Start Timer'):
-    start_timer()
+col1, col2, col3 = st.columns(3)
 
-# 클릭 버튼
-if st.button('Button') and st.session_state['running']:
-    click()
+with col1:
+    if st.button('Start Timer'):
+        start_timer()
 
-# 리셋 버튼
-if st.button('Reset'):
-    reset()
+with col2:
+    if st.button('Click') and st.session_state['running']:
+        click()
 
-# 타이머 상태에 따라 UI 업데이트
-if st.session_state['running']:
-    st.text(f"Time left: {st.session_state['잔여시간']} seconds")
-else:
-    if st.session_state['잔여시간'] == 0:
-        st.text(f"최종 횟수: {st.session_state['cnt']}")
+with col3:
+    if st.button('Reset'):
+        reset()
+
+# 종료 메시지
+if not st.session_state['running'] and st.session_state['잔여시간'] == 0 and st.session_state['cnt'] > 0:
+    st.success(f"⏰ 시간 종료! 최종 클릭 수: {st.session_state['cnt']}회")
 
