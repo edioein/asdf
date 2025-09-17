@@ -63,3 +63,6 @@ if st.button('Reset'):
 if st.session_state['running']:
     st.text(f"Time left: {st.session_state['잔여시간']} seconds")
 else:
+    if st.session_state['잔여시간'] == 0:
+        st.text(f"최종 횟수: {st.session_state['cnt']}")
+
